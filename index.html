@@ -173,6 +173,13 @@ ul.sw li{margin-bottom:5px}
 .hometip{background:color-mix(in srgb,var(--accent) 13%,var(--surface));border:1px solid color-mix(in srgb,var(--accent) 35%,transparent);color:var(--fg);border-radius:12px;padding:11px 13px;font-size:13px;line-height:1.4;margin:0 0 14px}
 .hometip b{color:var(--accent)}
 .tipx{margin-top:8px;display:inline-block;background:var(--accent);color:var(--accent-fg);border:none;border-radius:8px;padding:6px 12px;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
+.idea{border-top:1px solid var(--border);padding:11px 0}
+.idea:first-child{border-top:none}
+.ih{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.ih b{font-family:var(--disp);font-size:15px}
+.ibtn{background:var(--surface-2);border:1px solid var(--border);color:var(--accent);border-radius:8px;padding:5px 9px;font:inherit;font-size:11.5px;font-weight:600;cursor:pointer;white-space:nowrap;flex:none}
+.itxt{font-size:13.5px;margin-top:5px}
+.im{color:var(--muted);font-size:12px}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
@@ -258,6 +265,8 @@ ul.sw li{margin-bottom:5px}
 
     <h2 class="sec">Giornata tipo (allenamento)</h2>
     <div class="card"><div class="tblwrap" id="dietTrain"></div></div>
+    <h2 class="sec">Más ideas de comidas</h2>
+    <div class="card" id="ideasCard"></div>
     <h2 class="sec">Giorno di riposo</h2>
     <div class="card">
       <p style="font-size:13.5px;margin:0 0 6px">Stesse proteine, meno carboidrati (≈ 2.700 kcal):</p>
@@ -588,6 +597,46 @@ renderDiet();
   ["Cena (abbondante)","200 g filetto/salmone o 4 uova + 150 g tofu + 350 g patate + verdura + 1 cucch. olio","820 · 45 P"],
   ["Prima di dormire","250 g kefir + melograno o ananas + 20 g mandorle","340 · 12 P"]];
   document.getElementById("dietTrain").innerHTML='<table><tbody>'+D.map(r=>'<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td></tr>').join('')+'</tbody></table>';})();
+
+const IDEAS={
+"Colazione":[
+ ["3 uova + 2 albumi + 70 g avena + 1 frutto","600 · 35 P"],
+ ["4 Wasa + 3 uova sode + 250 g Fage 0%","560 · 42 P"],
+ ["60 g avena + 250 g latte + 1 mis. proteine + 1 banana","580 · 36 P"],
+ ["60 g pane + 4 uova + ½ avocado + 1 kiwi","620 · 30 P"],
+ ["250 g Fage 0% + 70 g avena + miele + 20 g mandorle","600 · 28 P"]],
+"Pranzo":[
+ ["140 g riso crudo + 180 g pollo + ½ avocado + verdura + olio","950 · 55 P"],
+ ["180 g pasta + 200 g tonno + verdura + 1 cucch. olio","900 · 55 P"],
+ ["140 g riso + 200 g seitan + verdura + soia/aceto + olio","900 · 55 P"],
+ ["300 g patate + 180 g filetto + verdura + olio","850 · 52 P"],
+ ["180 g pasta al pesto + 150 g pollo + verdura","950 · 45 P"],
+ ["Pizza patate e salsicce (300 g) — 1×/sett","840 · 33 P"]],
+"Pomeriggio":[
+ ["Fage 0% 250 g + 1 frutto + 20 g frutti secchi","470 · 30 P"],
+ ["Frullato: 1-2 mis. proteine + 250 g latte/kefir + 1 banana","450 · 35 P"],
+ ["5 Wasa + 250 g Fage 0% + miele","450 · 30 P"],
+ ["200 g fiocchi di latte + 1 mela + 20 g anacardi","400 · 28 P"],
+ ["60 g pane + burro d'arachidi + 1 banana","480 · 18 P"]],
+"Cena":[
+ ["200 g filetto/salmone + 350 g patate + verdura + olio","820 · 45 P"],
+ ["4 uova + 150 g tofu + 150 g riso crudo + verdura","820 · 45 P"],
+ ["200 g pollo + 400 g riso cotto + verdura + olio","850 · 55 P"],
+ ["200 g seitan + 300 g patate + verdura + olio","780 · 48 P"],
+ ["Hamburger (panino + carne) + insalata — 1×/sett","650 · 30 P"]],
+"Prima di dormire":[
+ ["250 g fiocchi di latte + melograno + 20 g mandorle","340 · 30 P"],
+ ["250 g kefir + melograno/ananas + 20 g mandorle","340 · 12 P"],
+ ["250 g Fage 0% + 1 kiwi + 15 g noci","300 · 28 P"],
+ ["250 g yogurt greco + miele + 20 g pistacchi","360 · 25 P"]]
+};
+let ideaIdx={};
+function renderIdeas(){const el=document.getElementById("ideasCard");if(!el)return;
+  el.innerHTML='<p style="font-size:12.5px;color:var(--muted);margin:0 0 6px">Toca <b>🔄 otra</b> para más ejemplos de cada comida (con tus alimentos).</p>'+
+   Object.keys(IDEAS).map(s=>{const L=IDEAS[s],i=(ideaIdx[s]||0)%L.length,it=L[i];
+     return '<div class="idea"><div class="ih"><b>'+s+'</b><button class="ibtn" data-s="'+s+'">🔄 otra ('+(i+1)+'/'+L.length+')</button></div><div class="itxt">'+it[0]+' <span class="im">· '+it[1]+'</span></div></div>';}).join('');
+  el.querySelectorAll(".ibtn").forEach(b=>b.onclick=()=>{const s=b.dataset.s;ideaIdx[s]=((ideaIdx[s]||0)+1)%IDEAS[s].length;renderIdeas()});}
+renderIdeas();
 
 const wlog=document.getElementById("wlog");
 function renderW(){const a=store.get("av_weights",[]);const wc=document.getElementById("wchart");if(wc)wc.innerHTML=weightChartSVG(a);wlog.innerHTML=a.slice().reverse().map(w=>'<li><span>'+fmt(w.kg)+' kg</span><span class="d">'+w.d+'</span></li>').join("")}
