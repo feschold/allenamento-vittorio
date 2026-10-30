@@ -253,6 +253,9 @@ ul.sw li{margin-bottom:5px}
       <p style="font-size:13px;color:var(--muted);margin:10px 0 0">+ Creatina 5 g/giorno. Volume limpio: <b style="color:var(--fg)">+0,25–0,4 kg a settimana</b>.</p>
     </div>
 
+    <h2 class="sec">Storico giorni</h2>
+    <div class="card"><div id="dietHist"></div></div>
+
     <h2 class="sec">Giornata tipo (allenamento)</h2>
     <div class="card"><div class="tblwrap" id="dietTrain"></div></div>
     <h2 class="sec">Giorno di riposo</h2>
@@ -277,6 +280,7 @@ ul.sw li{margin-bottom:5px}
     <div class="card">
       <p style="font-size:13px;color:var(--muted);margin:0">1 volta a settimana, a digiuno. Se non sali → +50 g riso a pranzo e post. Se sali &gt;0,4 kg → togli un po'.</p>
       <div class="weigh"><input id="wInput" type="number" inputmode="decimal" step="0.1" placeholder="Peso (kg)" aria-label="Peso in kg"><button id="wAdd">Salva</button></div>
+      <div id="wchart"></div>
       <ul id="wlog"></ul>
     </div>
   </section>
@@ -496,7 +500,44 @@ function macroRow(label,cons,tgt,unit){
     '<span class="rem'+(over?' over':'')+'">'+remTxt+'</span></div>'+
     '<div class="bar"><i class="'+(over?'over':'')+'" style="width:'+pct+'%"></i></div></div>';
 }
+function allDietDays(){const out=[];try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);
+  if(k&&/^av_food_\d{4}-\d{2}-\d{2}$/.test(k)){let items=[];try{items=JSON.parse(localStorage.getItem(k))||[]}catch(e){}
+  let kc=0,p=0,c=0,f=0;items.forEach(it=>{kc+=it.kcal||0;p+=it.p||0;c+=it.c||0;f+=it.f||0});
+  if(items.length)out.push({date:k.slice(8),kcal:kc,p:p,c:c,f:f})}}}catch(e){}
+  out.sort((a,b)=>a.date<b.date?-1:1);return out;}
+function dmLab(iso){return iso.split("-")[2]}
+function dmFull(iso){const p=iso.split("-");return p[2]+"/"+p[1]}
+function dietBarsSVG(days){
+  if(!days.length)return '<div class="nochart">Registra la comida cada día y aquí verás el histórico con gráfico.</div>';
+  const show=days.slice(-14),W=330,H=118,padT=16,padB=18,padL=4,padR=4,tgt=TGT.kcal;
+  const maxV=Math.max(tgt,...show.map(d=>d.kcal))*1.08,bw=(W-padL-padR)/show.length;
+  const y=v=>padT+(1-v/maxV)*(H-padT-padB);
+  let s='<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="display:block;max-width:360px">';
+  const ty=y(tgt);
+  s+='<line x1="'+padL+'" y1="'+ty.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+ty.toFixed(1)+'" stroke="var(--imp)" stroke-width="1" stroke-dasharray="4 3"/>';
+  s+='<text x="'+(W-padR)+'" y="'+(ty-3).toFixed(1)+'" font-size="8" fill="var(--imp)" text-anchor="end">meta '+tgt+'</text>';
+  show.forEach((d,i)=>{const x=padL+i*bw+bw*0.15,w=bw*0.7,by=y(d.kcal),bh=(padT+(H-padT-padB))-by,ok=d.kcal>=tgt*0.9;
+    s+='<rect x="'+x.toFixed(1)+'" y="'+by.toFixed(1)+'" width="'+w.toFixed(1)+'" height="'+Math.max(1,bh).toFixed(1)+'" rx="2" fill="'+(ok?'var(--accent)':'var(--surface-2)')+'"/>';
+    s+='<text x="'+(x+w/2).toFixed(1)+'" y="'+(H-5)+'" font-size="7.5" fill="var(--muted)" text-anchor="middle">'+dmLab(d.date)+'</text>';});
+  s+='</svg>';return s;}
+function dietList(days){if(!days.length)return '';
+  return '<details class="hist" style="margin-top:10px"><summary>Ver todos los días ('+days.length+')</summary><ul>'+
+    days.slice().reverse().map(d=>'<li><b>'+dmFull(d.date)+'</b> — '+Math.round(d.kcal)+' kcal · '+Math.round(d.p)+'P · '+Math.round(d.c)+'C · '+Math.round(d.f)+'G</li>').join('')+'</ul></details>';}
+function renderDietHistory(){const el=document.getElementById("dietHist");if(!el)return;const days=allDietDays();
+  el.innerHTML='<p style="font-size:12.5px;color:var(--muted);margin:0 0 8px">kcal por día · línea roja = meta '+TGT.kcal+'</p>'+dietBarsSVG(days)+dietList(days);}
+function weightChartSVG(a){const pts=(a||[]).map(w=>w.kg).filter(v=>typeof v==="number");
+  if(pts.length<2)return '';
+  const W=300,H=80,padT=10,padB=16,xL=30;let mn=Math.min(...pts),mx=Math.max(...pts);if(mn===mx){mn-=1;mx+=1}
+  const x=i=>xL+i*((W-xL-8)/(pts.length-1)),y=v=>padT+(1-(v-mn)/(mx-mn))*(H-padT-padB);
+  const line=pts.map((v,i)=>(i?'L':'M')+x(i).toFixed(1)+' '+y(v).toFixed(1)).join(' ');
+  let s='<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="max-width:320px;margin:8px 0;display:block">';
+  s+='<text x="2" y="'+(y(mx)+3).toFixed(1)+'" font-size="9" fill="var(--muted)">'+fmt(mx)+'</text>';
+  s+='<text x="2" y="'+(y(mn)+3).toFixed(1)+'" font-size="9" fill="var(--muted)">'+fmt(mn)+'</text>';
+  s+='<path d="'+line+'" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+  pts.forEach((v,i)=>{s+='<circle cx="'+x(i).toFixed(1)+'" cy="'+y(v).toFixed(1)+'" r="2.8" fill="var(--accent)"/>'});
+  s+='</svg>';return s;}
 function renderDiet(){
+  renderDietHistory();
   const items=todayFoods();let k=0,p=0,c=0,f=0;items.forEach(it=>{k+=it.kcal;p+=it.p;c+=it.c;f+=it.f});
   let html=macroRow("kcal",k,TGT.kcal,"")+macroRow("Proteine",p,TGT.p," g")+macroRow("Carboidrati",c,TGT.c," g")+macroRow("Grassi",f,TGT.f," g");
   const remP=TGT.p-p;
@@ -549,7 +590,7 @@ renderDiet();
   document.getElementById("dietTrain").innerHTML='<table><tbody>'+D.map(r=>'<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td></tr>').join('')+'</tbody></table>';})();
 
 const wlog=document.getElementById("wlog");
-function renderW(){const a=store.get("av_weights",[]);wlog.innerHTML=a.slice().reverse().map(w=>'<li><span>'+fmt(w.kg)+' kg</span><span class="d">'+w.d+'</span></li>').join("")}
+function renderW(){const a=store.get("av_weights",[]);const wc=document.getElementById("wchart");if(wc)wc.innerHTML=weightChartSVG(a);wlog.innerHTML=a.slice().reverse().map(w=>'<li><span>'+fmt(w.kg)+' kg</span><span class="d">'+w.d+'</span></li>').join("")}
 document.getElementById("wAdd").onclick=()=>{const inp=document.getElementById("wInput"),v=num(inp.value);
   if(v==null)return;const a=store.get("av_weights",[]);a.push({kg:v,d:todayLabel()});store.set("av_weights",a);inp.value="";renderW()};
 renderW();
