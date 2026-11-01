@@ -31,6 +31,7 @@
   --warn-bg:#2a2318; --shadow:0 1px 2px rgba(0,0,0,.35); color-scheme:dark;
 }
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html,body{margin:0}
 body{background:var(--bg);color:var(--fg);font-family:var(--body);line-height:1.5;
   -webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
@@ -169,10 +170,18 @@ ul.sw li{margin-bottom:5px}
 .pinerr{color:var(--imp);font-size:12.5px;margin-top:8px;text-align:center}
 .savest{font-size:11.5px;margin:0 0 12px;color:var(--muted)}
 .savest.ok{color:var(--good)}
-.savest.warn{color:var(--warn)}
-.hometip{background:color-mix(in srgb,var(--accent) 13%,var(--surface));border:1px solid color-mix(in srgb,var(--accent) 35%,transparent);color:var(--fg);border-radius:12px;padding:11px 13px;font-size:13px;line-height:1.4;margin:0 0 14px}
-.hometip b{color:var(--accent)}
-.tipx{margin-top:8px;display:inline-block;background:var(--accent);color:var(--accent-fg);border:none;border-radius:8px;padding:6px 12px;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
+.savest.warn{color:var(--warn);font-weight:600}
+.savest.bad{color:var(--imp);font-weight:700}
+.savebox{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:9px 12px;margin:0 0 12px;box-shadow:var(--shadow)}
+.savebox .savest{margin:0;font-size:12.5px}
+.savehint{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.4}
+details.bk{margin-top:6px}
+details.bk summary{font-size:12px;color:var(--accent);cursor:pointer;font-weight:600;list-style:none}
+details.bk summary::-webkit-details-marker{display:none}
+details.bk p{font-size:12px;color:var(--muted);margin:6px 0}
+.bkrow{display:flex;gap:8px;flex-wrap:wrap}
+.bkrow button{background:var(--accent);color:var(--accent-fg);border:none;border-radius:8px;padding:7px 12px;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
+#bkTxt{width:100%;margin-top:8px;background:var(--surface-2);border:1px solid var(--border);color:var(--fg);border-radius:9px;padding:8px;font:12px ui-monospace,monospace;resize:vertical}
 .idea{border-top:1px solid var(--border);padding:11px 0}
 .idea:first-child{border-top:none}
 .ih{display:flex;justify-content:space-between;align-items:center;gap:8px}
@@ -205,7 +214,15 @@ ul.sw li{margin-bottom:5px}
 </div></header>
 
 <main class="wrap">
-  <div id="cloudWarn" class="hometip" hidden>📲 <b>Per non perdere i dati:</b> apri questa pagina in Safari, tocca <b>Condividi → Aggiungi alla schermata Home</b> e usa l'app da lì.<br><button id="tipX" class="tipx">Ho capito</button></div>
+  <div class="savebox">
+    <div id="saveStatus" class="savest">Controllo dove salvare…</div>
+    <div id="saveHint" class="savehint" hidden></div>
+    <details class="bk"><summary>💾 Backup dei dati</summary>
+      <p>«Copia» crea un codice con tutti i tuoi dati: incollalo nelle Note. Se un giorno l'app è vuota (o cambi telefono/copia), incollalo qui sotto e tocca «Ripristina».</p>
+      <div class="bkrow"><button id="bkCopy">Copia backup</button><button id="bkLoad">Ripristina</button></div>
+      <textarea id="bkTxt" rows="3" placeholder="Incolla qui il backup e tocca Ripristina" aria-label="Codice di backup"></textarea>
+    </details>
+  </div>
   <section id="tab-palestra">
     <div class="days" id="days"></div>
     <div class="intens"><b>Intensità massima:</b> ogni serie a 1-2 reps dal cedimento, gli isolamenti a cedimento. Niente serie "facili". Ogni settimana <b>+1 rep o +peso</b>.</div>
@@ -224,7 +241,6 @@ ul.sw li{margin-bottom:5px}
   <section id="tab-dieta" class="hidden">
     <div class="card">
       <div class="daymeta" style="margin-bottom:8px"><h2 style="font-size:20px">Oggi</h2><span class="tag" id="foodDate"></span></div>
-      <div id="saveStatus" class="savest">Salvataggio…</div>
       <div class="trk" id="trk"></div>
       <div class="addfood">
         <input class="fname" id="foodName" list="foodDL" placeholder="Cerca o scrivi un cibo" autocomplete="off">
@@ -298,8 +314,12 @@ ul.sw li{margin-bottom:5px}
 
 <script>
 "use strict";
-const store={get(k,f){try{const v=localStorage.getItem(k);return v==null?f:JSON.parse(v)}catch(e){return f}},
-  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+/* memoria del browser; se è bloccata (es. dentro una chat di Claude) uso la RAM e lo dico chiaramente */
+let LS_OK=false;
+const LS=(()=>{try{const s=window.localStorage,k="av__test";s.setItem(k,"1");const ok=s.getItem(k)==="1";s.removeItem(k);if(ok){LS_OK=true;return s}}catch(e){}
+  const m=new Map();return{getItem:k=>m.has(k)?m.get(k):null,setItem:(k,v)=>{m.set(k,String(v))},removeItem:k=>{m.delete(k)},key:i=>[...m.keys()][i]??null,get length(){return m.size}}})();
+const store={get(k,f){try{const v=LS.getItem(k);return v==null?f:JSON.parse(v)}catch(e){return f}},
+  set(k,v){try{LS.setItem(k,JSON.stringify(v))}catch(e){}}};
 const num=v=>{const n=parseFloat(String(v==null?"":v).replace(",","."));return isNaN(n)?null:n};
 const fmt=n=>(n==null?"":String(n).replace(".",","));
 const r1=n=>Math.round(n*10)/10;
@@ -500,7 +520,8 @@ document.getElementById("foodDate").textContent=todayLabel();
 store.get("av_customfoods",[]).forEach(cf=>{if(cf&&cf.n&&!FOODS.some(x=>x.n.toLowerCase()===String(cf.n).toLowerCase()))FOODS.push(cf)});
 FOODS.forEach(f=>{const o=document.createElement("option");o.value=f.n;foodDL.appendChild(o)});
 foodName.addEventListener("input",()=>{const f=foodByName(foodName.value);if(f){foodUn.textContent=f.u==="pz"?"pz":"g";foodQty.value=f.d}});
-const foodKey=()=>"av_food_"+new Date().toISOString().slice(0,10);
+const isoDay=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+const foodKey=()=>"av_food_"+isoDay();
 const todayFoods=()=>store.get(foodKey(),[]);
 function macroRow(label,cons,tgt,unit){
   const pct=Math.min(100,tgt?cons/tgt*100:0),over=cons>tgt,rem=r1(tgt-cons),
@@ -509,8 +530,8 @@ function macroRow(label,cons,tgt,unit){
     '<span class="rem'+(over?' over':'')+'">'+remTxt+'</span></div>'+
     '<div class="bar"><i class="'+(over?'over':'')+'" style="width:'+pct+'%"></i></div></div>';
 }
-function allDietDays(){const out=[];try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);
-  if(k&&/^av_food_\d{4}-\d{2}-\d{2}$/.test(k)){let items=[];try{items=JSON.parse(localStorage.getItem(k))||[]}catch(e){}
+function allDietDays(){const out=[];try{for(let i=0;i<LS.length;i++){const k=LS.key(i);
+  if(k&&/^av_food_\d{4}-\d{2}-\d{2}$/.test(k)){let items=[];try{items=JSON.parse(LS.getItem(k))||[]}catch(e){}
   let kc=0,p=0,c=0,f=0;items.forEach(it=>{kc+=it.kcal||0;p+=it.p||0;c+=it.c||0;f+=it.f||0});
   if(items.length)out.push({date:k.slice(8),kcal:kc,p:p,c:c,f:f})}}}catch(e){}
   out.sort((a,b)=>a.date<b.date?-1:1);return out;}
@@ -661,8 +682,8 @@ renderDays();renderDay();
 
 /* ===== PIN d'ingresso (lucchetto leggero, non sicurezza vera) ===== */
 (function(){const PIN="231558",lk=document.getElementById("lock");
-  const isUnlocked=()=>{try{return localStorage.getItem("av_unlocked")==="1"}catch(e){return false}};
-  const unlock=()=>{lk.hidden=true;try{localStorage.setItem("av_unlocked","1")}catch(e){}};
+  const isUnlocked=()=>{try{return LS.getItem("av_unlocked")==="1"}catch(e){return false}};
+  const unlock=()=>{lk.hidden=true;try{LS.setItem("av_unlocked","1")}catch(e){}};
   if(isUnlocked())unlock();
   const inp=document.getElementById("pin"),err=document.getElementById("pinErr");
   function tryPin(){if(inp.value.trim()===PIN)unlock();else{err.hidden=false;inp.value=""}}
@@ -670,41 +691,82 @@ renderDays();renderDay();
   inp.addEventListener("keydown",e=>{if(e.key==="Enter")tryPin()});
 })();
 
-/* ===== salvataggio nell'account Claude (persistente, anche tra dispositivi) ===== */
-function collectState(){const s={};try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.indexOf("av_")===0)s[k]=localStorage.getItem(k)}}catch(e){}return s}
-function applyState(s){try{for(const k in s){if(k.indexOf("av_")===0&&typeof s[k]==="string")localStorage.setItem(k,s[k])}}catch(e){}}
+/* ===== salvataggio: account Claude se c'è, altrimenti solo telefono (+ backup manuale) ===== */
+function collectState(){const s={};try{for(let i=0;i<LS.length;i++){const k=LS.key(i);if(k&&k.indexOf("av_")===0)s[k]=LS.getItem(k)}}catch(e){}return s}
+function applyState(s){try{for(const k in s){if(k.indexOf("av_")===0&&typeof s[k]==="string")LS.setItem(k,s[k])}}catch(e){}}
 function rerenderAll(){hist=store.get("av_hist",{});draft=store.get("av_draft",{});curDay=store.get("av_curday","pushA");
   const sv=store.get("av_theme",null);if(sv)document.documentElement.setAttribute("data-theme",sv);
+  if(LS.getItem("av_unlocked")==="1")document.getElementById("lock").hidden=true;
   renderDays();renderDay();renderDiet();renderW();}
-function setStatus(txt,cls){const e=document.getElementById("saveStatus");if(e){e.textContent=txt;e.className="savest"+(cls?" "+cls:"")}}
-function showTip(on){const b=document.getElementById("cloudWarn");if(!b)return;let d=false;try{d=localStorage.getItem("av_hometip")==="1"}catch(e){}b.hidden=!(on&&!d)}
-(function(){const tx=document.getElementById("tipX");if(tx)tx.onclick=()=>{try{localStorage.setItem("av_hometip","1")}catch(e){}const b=document.getElementById("cloudWarn");if(b)b.hidden=true}})();
-setStatus("Salvato su questo telefono","ok");
+const hhmm=()=>new Date().toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"});
+function setStatus(txt,cls,hint){const e=document.getElementById("saveStatus");if(!e)return;
+  e.className="savest"+(cls?" "+cls:"");e.textContent=txt;
+  const h=document.getElementById("saveHint");if(h){h.textContent=hint||"";h.hidden=!hint}}
+const HINT_PHONE="Restano in questo browser: apri l'app sempre dallo stesso posto (meglio l'icona sulla Home, non Safari in modalità privata) e ogni tanto tocca «Backup dei dati» → Copia.";
+function phoneOnly(){
+  try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}
+  if(LS_OK)setStatus("📱 Salvato solo su questo telefono","warn",HINT_PHONE);
+  else setStatus("⚠ Qui non si salva niente: se chiudi perdi tutto","bad","Prima di chiudere tocca «Backup dei dati» → Copia, oppure apri l'app dal link della tua copia nell'account Claude.");
+}
+setStatus("Controllo dove salvare…","");
+
+async function pickBackend(){
+  if(window.claude&&typeof window.claude.use==="function"){
+    try{const db=await window.claude.use("db"),u=await window.claude.use("user"),uid=u?await u.id():null;
+      if(db&&uid){const ref=db.doc("data/users/"+uid+"/state");
+        return{get:async()=>{const s=await ref.get();return s&&s.exists?(s.data()||null):null},put:d=>ref.set(d)}}}catch(e){}
+  }
+  if(window.storage&&typeof window.storage.get==="function"&&typeof window.storage.set==="function"){
+    const K="av_state";
+    return{get:async()=>{let r;
+        try{r=await window.storage.get(K)}catch(e){
+          const l=await window.storage.list("av_");const ks=(l&&(l.keys||l))||[];
+          if(Array.isArray(ks)&&!ks.some(x=>x===K||(x&&x.key===K)))return null;throw e}
+        if(!r)return null;const v=typeof r==="string"?r:r.value;return v?JSON.parse(v):null},
+      put:d=>window.storage.set(K,JSON.stringify(d))};
+  }
+  return null;
+}
 (function waitClaude(n){
-  if(window.claude&&window.claude.use){initSync();return}
-  if((n||0)>40){setStatus("Salvato su questo telefono","ok");showTip(true);return}
+  if((window.claude&&window.claude.use)||window.storage){initSync();return}
+  if((n||0)>40){phoneOnly();return}
   setTimeout(()=>waitClaude((n||0)+1),150);
 })();
 async function initSync(){
-  let db=null,uid=null;
-  try{db=await window.claude.use("db")}catch(e){}
-  try{const u=await window.claude.use("user");if(u)uid=await u.id()}catch(e){}
-  if(!db||!uid){setStatus("Salvato su questo telefono","ok");showTip(true);return}
-  let ref;try{ref=db.doc("data/users/"+uid+"/state")}catch(e){return}
-  try{const snap=await ref.get();if(snap&&snap.exists){const d=snap.data()||{};
-    const rTs=Number(d.ts)||0,lTs=Number(store.get("av_ts",0))||0;
-    if(d.blob&&rTs>=lTs){applyState(d.blob);rerenderAll()}}}catch(e){}
-  setStatus("☁ Salvato nel tuo account Claude","ok");showTip(false);
+  const be=await pickBackend();
+  if(!be){phoneOnly();return}
+  // Leggo prima l'account; se la lettura fallisce NON scrivo niente (così non si sovrascrivono i dati buoni).
+  let remote,ok=false;
+  for(let i=0;i<3&&!ok;i++){try{remote=await be.get();ok=true}catch(e){await new Promise(r=>setTimeout(r,800))}}
+  if(!ok){setStatus("⚠ Non riesco a leggere il tuo account Claude","bad","Per ora i dati restano solo qui. Riapri l'app più tardi; prima di chiudere fai «Backup dei dati» → Copia.");return}
+  // Unione: tengo le chiavi di entrambi; dove sono diverse vince il lato salvato più di recente.
+  const r=(remote&&remote.blob)||{},rTs=Number(remote&&remote.ts)||0,lTs=Number(store.get("av_ts",0))||0,l=collectState();
+  const blob=lTs>rTs?Object.assign({},r,l):Object.assign({},l,r),ts=Math.max(rTs,lTs);
+  applyState(blob);if(ts)LS.setItem("av_ts",String(ts));rerenderAll();
   let saving=false,pending=false,tmr;
   async function flush(){if(saving){pending=true;return}saving=true;
-    try{await ref.set({ts:Number(store.get("av_ts",0))||Date.now(),blob:collectState()});setStatus("☁ Salvato nel tuo account Claude","ok");showTip(false)}
-    catch(e){setStatus("Salvato su questo telefono","ok");showTip(true)}
+    try{await be.put({ts:Number(store.get("av_ts",0))||Date.now(),blob:collectState()});setStatus("☁ Salvato nel tuo account Claude · "+hhmm(),"ok")}
+    catch(e){setStatus("⚠ Salvataggio nell'account non riuscito","bad","L'ultima modifica è solo su questo telefono: riprova tra poco o fai «Backup dei dati» → Copia.")}
     saving=false;if(pending){pending=false;flush()}}
   const schedule=()=>{clearTimeout(tmr);tmr=setTimeout(flush,350)};
   const origSet=store.set.bind(store);
   store.set=function(k,v){origSet(k,v);if(k!=="av_ts")origSet("av_ts",Date.now());schedule()};
   document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){clearTimeout(tmr);flush()}});
   window.addEventListener("pagehide",()=>{clearTimeout(tmr);flush()});
-  flush();
+  const same=JSON.stringify(r)===JSON.stringify(collectState());
+  if(same)setStatus("☁ Salvato nel tuo account Claude","ok");else flush();
 }
+
+/* ===== backup manuale (copia/incolla) ===== */
+(function(){const txt=document.getElementById("bkTxt"),cp=document.getElementById("bkCopy"),ld=document.getElementById("bkLoad");
+  cp.onclick=async()=>{const code=JSON.stringify(collectState());txt.value=code;
+    try{await navigator.clipboard.writeText(code);showToast("Backup copiato ✓ — incollalo nelle Note")}
+    catch(e){txt.focus();txt.select();showToast("Seleziona il testo qui sotto e copialo")}};
+  let armed=false,armT;
+  ld.onclick=()=>{let s;try{s=JSON.parse(txt.value.trim())}catch(e){showToast("Backup non valido");return}
+    if(!s||typeof s!=="object"||!Object.keys(s).some(k=>k.indexOf("av_")===0)){showToast("Backup non valido");return}
+    if(!armed){armed=true;ld.textContent="Tocca di nuovo per confermare";clearTimeout(armT);armT=setTimeout(()=>{armed=false;ld.textContent="Ripristina"},4000);return}
+    armed=false;ld.textContent="Ripristina";delete s.av_ts;applyState(s);store.set("av_restored",Date.now());rerenderAll();txt.value="";showToast("Dati ripristinati ✓")};
+})();
 </script>
+
