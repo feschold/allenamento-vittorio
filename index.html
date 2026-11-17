@@ -99,6 +99,8 @@ h2.sec{font-size:15px;text-transform:uppercase;letter-spacing:1px;color:var(--mu
   background:var(--surface-2);color:var(--muted);font-size:21px;font-weight:700;cursor:pointer;line-height:1}
 .setrow.done .ok{background:var(--good);border-color:var(--good);color:#fff}
 .sugg{font-size:12.5px;margin-top:3px}
+.wk{font-size:12.5px;margin-top:4px;font-weight:600;color:var(--accent)}
+.wkban{font-size:12.5px;line-height:1.45;margin:0 0 10px;padding:8px 10px;border-radius:10px;background:color-mix(in srgb,var(--accent) 10%,transparent)}
 .sugg b{color:var(--accent)}
 .exbtns{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
 .addset{background:none;border:1px dashed var(--border);color:var(--accent);border-radius:9px;padding:7px 12px;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
@@ -239,7 +241,7 @@ details.bk p{font-size:12px;color:var(--muted);margin:6px 0}
 </div>
 <header><div class="wrap">
   <div class="hd">
-    <div><h1>Allenamento <b>Vittorio</b></h1><div class="sub">PPL 6 giorni · intensità massima · collo-safe · v26</div></div>
+    <div><h1>Allenamento <b>Vittorio</b></h1><div class="sub">PPL 6 giorni · intensità massima · collo-safe · v27</div></div>
     <button class="theme" id="theme">Tema</button>
   </div>
   <nav class="tabs">
@@ -476,37 +478,39 @@ const saveDraft=()=>store.set("av_draft2",draft);
   if(ch)saveDraft()})();
 const sessions=id=>Array.isArray(hist[id])?hist[id]:[];
 const setsDone=se=>(se&&se.sets?se.sets.filter(Boolean):[]);
-/* ===== v26: carichi e pesi dal gruppo WhatsApp «Calcolo» (12-17 nov) — si aggiungono una volta, senza toccare i dati già nell'app ===== */
+/* ===== v27: aggiornamento settimanale. Il blocco WEEKLY lo riscrive Claude ogni settimana con i tuoi appunti (WhatsApp «Calcolo» o file 🏁):
+   sessioni, pesi e obiettivi. Si aggiunge senza toccare quello che hai segnato nell'app. ===== */
 const RENAME26={"pushB|4":["Dip alla macchina o assistite","Dip con zavorra"],"legsB|2":["Leg curl sdraiato","Leg curl seduto"],"legsB|4":["Affondo bulgaro","Affondo con manubri"]};
-const SEED26=[
- ["2026-11-12","12 nov","pullA",[["pullA|0",66],["pullA|1",26],["pullA|2",45],["pullA|3",24.8]]],
- ["2026-11-13","13 nov","legsA",[["legsA|1",110],["legsA|3",52]]],
- ["2026-11-14","14 nov","pushB",[["pushB|0",60],["pushB|1",10],["pushB|2",15],["pushB|3",3.5],["pushB|4",15],["pushB|5",22.5]]],
- ["2026-11-15","15 nov","pullB",[["pullB|1",45],["pullB|2",17.5],["pullB|3",22.5],["pullB|4",17.5],["pullB|5",10]]],
- ["2026-11-16","16 nov","legsB",[["legsB|0",25],["legsB|1",60],["legsB|2",55],["legsB|3",170],["legsB|4",15]]]];
-const SEEDW26=[["2026-11-05","05 nov",79.5],["2026-11-07","07 nov",79.8],["2026-11-09","09 nov",80.7],["2026-11-10","10 nov",81.19],
- ["2026-11-15","15 nov",81.73],["2026-11-16","16 nov",81.27],["2026-11-17","17 nov",81.07]];
-function applySeed26(){
+/*WEEKLY-START*/const WEEKLY={"updated":"2026-11-17","from":"2026-11-18","to":"2026-11-24","note":"Dati dal tuo WhatsApp del 12-17 nov. Da ora segna anche le reps: il prossimo aggiornamento è col giorno di riposo.","sessions":[["2026-11-12","12 nov","pullA",[["pullA|0",66.0,null],["pullA|1",26.0,null],["pullA|2",45.0,null],["pullA|3",24.8,null]]],["2026-11-13","13 nov","legsA",[["legsA|1",110.0,null],["legsA|3",52.0,null]]],["2026-11-14","14 nov","pushB",[["pushB|0",60.0,null],["pushB|1",10.0,null],["pushB|2",15.0,null],["pushB|3",3.5,null],["pushB|4",15.0,null],["pushB|5",22.5,null]]],["2026-11-15","15 nov","pullB",[["pullB|1",45.0,null],["pullB|2",17.5,null],["pullB|3",22.5,null],["pullB|4",17.5,null],["pullB|5",10.0,null]]],["2026-11-16","16 nov","legsB",[["legsB|0",25.0,null],["legsB|1",60.0,null],["legsB|2",55.0,null],["legsB|3",170.0,null],["legsB|4",15.0,null]]]],"weights":[["2026-11-05","05 nov",79.5],["2026-11-07","07 nov",79.8],["2026-11-09","09 nov",80.7],["2026-11-10","10 nov",81.19],["2026-11-15","15 nov",81.73],["2026-11-16","16 nov",81.27],["2026-11-17","17 nov",81.07]],"targets":{"pullA|1":"26 kg finché fai 10 reps in tutte le serie, poi +2 kg. Segna le reps!","pullA|0":"66 kg finché fai 8 reps in tutte le serie, poi +5 kg. Segna le reps!","pullA|3":"24,8 kg finché fai 15 reps in tutte le serie, poi +2,5 kg. Segna le reps!","pullA|2":"45 kg finché fai 10 reps in tutte le serie, poi +5 kg. Segna le reps!","legsA|1":"110 kg finché fai 10 reps in tutte le serie, poi +10 kg. Segna le reps!","legsA|3":"52 kg finché fai 12 reps in tutte le serie, poi +5 kg. Segna le reps!","pushB|5":"22,5 kg finché fai 12 reps in tutte le serie, poi +2,5 kg. Segna le reps!","pushB|2":"15 kg finché fai 10 reps in tutte le serie, poi +2 kg. Segna le reps!","pushB|0":"60 kg finché fai 8 reps in tutte le serie, poi +5 kg. Segna le reps!","pushB|1":"10 kg finché fai 12 reps in tutte le serie, poi +2,5 kg. Segna le reps!","pushB|3":"3,5 kg finché fai 15 reps in tutte le serie, poi +1 kg. Segna le reps!","pushB|4":"15 kg finché fai 10 reps in tutte le serie, poi +2,5 kg. Segna le reps!","pullB|1":"45 kg finché fai 10 reps in tutte le serie, poi +2,5 kg. Segna le reps!","pullB|2":"17,5 kg finché fai 12 reps in tutte le serie, poi +2,5 kg. Segna le reps!","pullB|3":"22,5 kg finché fai 15 reps in tutte le serie, poi +2,5 kg. Segna le reps!","pullB|4":"17,5 kg finché fai 12 reps in tutte le serie, poi +2,5 kg. Segna le reps!","pullB|5":"10 kg finché fai 12 reps in tutte le serie, poi +1 kg. Segna le reps!","legsB|0":"25 kg finché fai 8 reps in tutte le serie, poi +2 kg. Segna le reps!","legsB|3":"170 kg finché fai 10 reps in tutte le serie, poi +10 kg. Segna le reps!","legsB|1":"60 kg finché fai 10 reps in tutte le serie, poi +5 kg. Segna le reps!","legsB|2":"55 kg finché fai 12 reps in tutte le serie, poi +5 kg. Segna le reps!","legsB|4":"15 kg finché fai 12 reps in tutte le serie, poi +2 kg. Segna le reps!"}};/*WEEKLY-END*/
+function applyWeekly(){
   const del=new Set(store.get("av_seeddel",[]));let chH=false,chW=false,chP=false;
   const def={};PPL.forEach(d=>d.ex.forEach((e,i)=>{def[d.id+"|"+i]=e.s||3}));
-  SEED26.forEach(([iso,lab,day,list])=>list.forEach(([id,kg])=>{
+  (WEEKLY.sessions||[]).forEach(([iso,lab,day,list])=>list.forEach(([id,kg,reps])=>{
     if(del.has(id+"|"+iso))return;const a=Array.isArray(hist[id])?hist[id]:(hist[id]=[]);
-    if(a.some(se=>se&&se.iso===iso))return;
-    const n=def[id]||3,sets=[];for(let i=0;i<n;i++)sets.push({kg:kg,reps:null});
+    let sets=[];if(Array.isArray(reps)&&reps.length)sets=reps.map(r=>({kg:kg,reps:r}));else{const n=def[id]||3;for(let i=0;i<n;i++)sets.push({kg:kg,reps:null})}
+    const ix=a.findIndex(se=>se&&se.iso===iso);
+    if(ix>=0){const old=a[ix];if(!(old&&old.src==="wa"))return;            // segnato da te nell'app: non si tocca
+      if(JSON.stringify(old.sets)===JSON.stringify(sets))return;a[ix]={date:lab,iso:iso,day:day,sets:sets,src:"wa"};chH=true;return}  // correzione
     a.push({date:lab,iso:iso,day:day,sets:sets,src:"wa"});a.sort((x,y)=>String(x&&x.iso||"").localeCompare(String(y&&y.iso||"")));chH=true}));
   if(chH)store.set("av_hist",hist);
   const w=store.get("av_weights",[]);
-  SEEDW26.forEach(([iso,lab,kg])=>{if(del.has("w|"+iso)||w.some(x=>x&&x.iso===iso))return;w.push({kg:kg,d:lab,iso:iso,src:"wa"});chW=true});
+  (WEEKLY.weights||[]).forEach(([iso,lab,kg])=>{if(del.has("w|"+iso))return;const j=w.findIndex(x=>x&&x.iso===iso);
+    if(j>=0){if(w[j].src==="wa"&&w[j].kg!==kg){w[j].kg=kg;chW=true}return}
+    w.push({kg:kg,d:lab,iso:iso,src:"wa"});chW=true});
   if(chW){w.sort((x,y)=>String(x.iso||"").localeCompare(String(y.iso||"")));store.set("av_weights",w)}
   if(prog&&typeof prog==="object")Object.keys(RENAME26).forEach(id=>{const dd=id.split("|")[0],L=prog[dd];if(!Array.isArray(L))return;
     L.forEach(e=>{if(e&&e.id===id&&e.n===RENAME26[id][0]){e.n=RENAME26[id][1];chP=true}})});
   if(chP)store.set("av_prog",prog);
 }
+const dIt=iso=>{if(!iso)return"";const p=iso.split("-");return +p[2]+" "+["gen","feb","mar","apr","mag","giu","lug","ago","set","ott","nov","dic"][+p[1]-1]};
+function weekTarget(e,pv){const t=(WEEKLY.targets||{})[e.id];if(!t)return"";
+  const pvIso=pv&&pv.iso||"";if(pvIso&&WEEKLY.updated&&pvIso>WEEKLY.updated)return"";  // dopo l'aggiornamento conta il suggerimento dell'app
+  return t}
 const isWA=se=>!!(se&&se.src==="wa");
-const waTxt=se=>{const k=setsDone(se).find(s=>s.kg!=null);return(k?fmt(k.kg)+" kg":"–")+" (dal tuo WhatsApp, reps non segnate)"};
+const waTxt=se=>{const ss=setsDone(se),k=ss.find(s=>s.kg!=null),rr=ss.map(s=>s.reps).filter(r=>r!=null);return(k?fmt(k.kg)+" kg":"–")+(rr.length?" × "+rr.join(", ")+" (dal tuo WhatsApp)":" (dal tuo WhatsApp, reps non segnate)")};
 const seTxt=(se,sep)=>isWA(se)?waTxt(se):setsDone(se).map(setTxt).join(sep||" · ");
 function markSeedDel(key){const a=store.get("av_seeddel",[]);if(!a.includes(key)){a.push(key);store.set("av_seeddel",a)}}
-applySeed26();
+applyWeekly();
 
 const todayEntry=id=>sessions(id).find(se=>se&&se.iso===isoToday())||null;
 const prevEntry=id=>{const a=sessions(id),t=isoToday();for(let i=a.length-1;i>=0;i--){if(a[i]&&a[i].iso!==t)return a[i]}return null};
@@ -546,7 +550,7 @@ function exHTML(e,i){
     '<div class="exh"><span class="exn">'+(i+1)+'. '+esc(e.n)+'</span><span class="exr">'+esc(e.r)+'</span></div>'+
     '<a class="howto" href="'+yt(e.n)+'" target="_blank" rel="noopener">▶ Come si fa</a>'+etype(e.n);
   if(pvs.length)h+='<div class="prev">Ultima volta ('+esc(pv.date)+'): '+esc(seTxt(pv))+
-    (pr!=null?'  ·  <span class="pr">Record '+fmt(pr)+' kg</span>':'')+'</div><div class="sugg">'+suggestion(e)+'</div>';
+    (pr!=null?'  ·  <span class="pr">Record '+fmt(pr)+' kg</span>':'')+'</div>'+(weekTarget(e,pv)?'<div class="wk">🎯 Questa settimana: '+esc(weekTarget(e,pv))+'</div>':'<div class="sugg">'+suggestion(e)+'</div>');
   h+='</div></div><div class="sets">';
   for(let s=0;s<rows;s++){
     const cur=ts[s],done=!!cur,ref=pvs[s]||pvs[pvs.length-1]||null,dk=t+"|"+e.id+"|"+s;
@@ -578,6 +582,7 @@ function renderDay(){
   const P=getProg(),d=PPL.find(x=>x.id===curDay)||PPL[0],list=P[d.id];curDay=d.id;
   const done=list.reduce((a,e)=>a+setsDone(todayEntry(e.id)).length,0);
   let h='<div class="daymeta"><h2>'+d.name+'</h2><span class="tag">'+d.tag+'</span></div>';
+  if(WEEKLY.updated)h+='<div class="wkban"><b>Settimana '+dIt(WEEKLY.from)+' – '+dIt(WEEKLY.to)+'</b> · obiettivi aggiornati il '+dIt(WEEKLY.updated)+' con i tuoi dati'+(WEEKLY.note?'<br>'+esc(WEEKLY.note):'')+'</div>';
   h+='<div class="editbar"><span>'+(editMode?'Cambia nomi e schema, sposta o elimina. Lo storico resta.':
     (done?'Oggi: <b>'+done+' serie salvate ✓</b>':'Tocca <b style="color:var(--accent)">✓</b> dopo ogni serie: si salva da solo'))+'</span>'+
     '<button class="edbtn" data-act="edit">'+(editMode?'Fatto':'✏️ Modifica')+'</button></div>';
@@ -904,7 +909,7 @@ renderDays();renderDay();
 /* ===== salvataggio: account Claude se c'è, altrimenti solo telefono (+ backup manuale) ===== */
 function collectState(){const s={};try{for(let i=0;i<LS.length;i++){const k=LS.key(i);if(k&&k.indexOf("av_")===0)s[k]=LS.getItem(k)}}catch(e){}return s}
 function applyState(s){try{for(const k in s){if(k.indexOf("av_")===0&&typeof s[k]==="string")LS.setItem(k,s[k])}}catch(e){}}
-function rerenderAll(){hist=store.get("av_hist",{});prog=store.get("av_prog",null);draft=store.get("av_draft2",{});curDay=store.get("av_curday","pushA");applySeed26();
+function rerenderAll(){hist=store.get("av_hist",{});prog=store.get("av_prog",null);draft=store.get("av_draft2",{});curDay=store.get("av_curday","pushA");applyWeekly();
   const sv=store.get("av_theme",null);if(sv)document.documentElement.setAttribute("data-theme",sv);
   if(LS.getItem("av_unlocked")==="1")document.getElementById("lock").hidden=true;
   renderDays();renderDay();renderDiet();renderW();}
