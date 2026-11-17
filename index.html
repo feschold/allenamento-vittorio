@@ -239,7 +239,7 @@ details.bk p{font-size:12px;color:var(--muted);margin:6px 0}
 </div>
 <header><div class="wrap">
   <div class="hd">
-    <div><h1>Allenamento <b>Vittorio</b></h1><div class="sub">PPL 6 giorni · intensità massima · collo-safe · v25</div></div>
+    <div><h1>Allenamento <b>Vittorio</b></h1><div class="sub">PPL 6 giorni · intensità massima · collo-safe · v26</div></div>
     <button class="theme" id="theme">Tema</button>
   </div>
   <nav class="tabs">
@@ -391,7 +391,7 @@ const PPL=[
    {n:"Croci ai cavi",r:"3 × 10-12",s:3},
    {n:"Arnold press, seduto",r:"3 × 8-10",s:3},
    {n:"Alzate laterali ai cavi",r:"4 × 12-15",s:4},
-   {n:"Dip alla macchina o assistite",r:"3 × 8-10",s:3},
+   {n:"Dip con zavorra",r:"3 × 8-10",s:3},
    {n:"Pushdown presa inversa",r:"3 × 10-12",s:3}]},
  {id:"pullB",name:"Pull B",tag:"Dorso · Bicipiti",ex:[
    {n:"Lat machine presa neutra",r:"4 × 8-10",s:4},
@@ -403,9 +403,9 @@ const PPL=[
  {id:"legsB",name:"Legs B",tag:"Femorali · Glutei",ex:[
    {n:"Stacco rumeno con manubri",r:"4 × 6-8",s:4},
    {n:"Hip thrust",r:"3 × 8-10",s:3},
-   {n:"Leg curl sdraiato",r:"4 × 10-12",s:4},
+   {n:"Leg curl seduto",r:"4 × 10-12",s:4},
    {n:"Pressa con piedi alti",r:"3 × 8-10",s:3},
-   {n:"Affondo bulgaro",r:"3 × 10-12",s:3},
+   {n:"Affondo con manubri",r:"3 × 10-12",s:3},
    {n:"Polpacci seduto",r:"4 × 12-15",s:4}]}
 ];
 const GLUTEI=[
@@ -475,14 +475,47 @@ const saveDraft=()=>store.set("av_draft2",draft);
   Object.keys(draft).forEach(k=>{if(k.slice(0,10)!==t){delete draft[k];ch=true}});
   if(ch)saveDraft()})();
 const sessions=id=>Array.isArray(hist[id])?hist[id]:[];
+const setsDone=se=>(se&&se.sets?se.sets.filter(Boolean):[]);
+/* ===== v26: carichi e pesi dal gruppo WhatsApp «Calcolo» (12-17 nov) — si aggiungono una volta, senza toccare i dati già nell'app ===== */
+const RENAME26={"pushB|4":["Dip alla macchina o assistite","Dip con zavorra"],"legsB|2":["Leg curl sdraiato","Leg curl seduto"],"legsB|4":["Affondo bulgaro","Affondo con manubri"]};
+const SEED26=[
+ ["2026-11-12","12 nov","pullA",[["pullA|0",66],["pullA|1",26],["pullA|2",45],["pullA|3",24.8]]],
+ ["2026-11-13","13 nov","legsA",[["legsA|1",110],["legsA|3",52]]],
+ ["2026-11-14","14 nov","pushB",[["pushB|0",60],["pushB|1",10],["pushB|2",15],["pushB|3",3.5],["pushB|4",15],["pushB|5",22.5]]],
+ ["2026-11-15","15 nov","pullB",[["pullB|1",45],["pullB|2",17.5],["pullB|3",22.5],["pullB|4",17.5],["pullB|5",10]]],
+ ["2026-11-16","16 nov","legsB",[["legsB|0",25],["legsB|1",60],["legsB|2",55],["legsB|3",170],["legsB|4",15]]]];
+const SEEDW26=[["2026-11-05","05 nov",79.5],["2026-11-07","07 nov",79.8],["2026-11-09","09 nov",80.7],["2026-11-10","10 nov",81.19],
+ ["2026-11-15","15 nov",81.73],["2026-11-16","16 nov",81.27],["2026-11-17","17 nov",81.07]];
+function applySeed26(){
+  const del=new Set(store.get("av_seeddel",[]));let chH=false,chW=false,chP=false;
+  const def={};PPL.forEach(d=>d.ex.forEach((e,i)=>{def[d.id+"|"+i]=e.s||3}));
+  SEED26.forEach(([iso,lab,day,list])=>list.forEach(([id,kg])=>{
+    if(del.has(id+"|"+iso))return;const a=Array.isArray(hist[id])?hist[id]:(hist[id]=[]);
+    if(a.some(se=>se&&se.iso===iso))return;
+    const n=def[id]||3,sets=[];for(let i=0;i<n;i++)sets.push({kg:kg,reps:null});
+    a.push({date:lab,iso:iso,day:day,sets:sets,src:"wa"});a.sort((x,y)=>String(x&&x.iso||"").localeCompare(String(y&&y.iso||"")));chH=true}));
+  if(chH)store.set("av_hist",hist);
+  const w=store.get("av_weights",[]);
+  SEEDW26.forEach(([iso,lab,kg])=>{if(del.has("w|"+iso)||w.some(x=>x&&x.iso===iso))return;w.push({kg:kg,d:lab,iso:iso,src:"wa"});chW=true});
+  if(chW){w.sort((x,y)=>String(x.iso||"").localeCompare(String(y.iso||"")));store.set("av_weights",w)}
+  if(prog&&typeof prog==="object")Object.keys(RENAME26).forEach(id=>{const dd=id.split("|")[0],L=prog[dd];if(!Array.isArray(L))return;
+    L.forEach(e=>{if(e&&e.id===id&&e.n===RENAME26[id][0]){e.n=RENAME26[id][1];chP=true}})});
+  if(chP)store.set("av_prog",prog);
+}
+const isWA=se=>!!(se&&se.src==="wa");
+const waTxt=se=>{const k=setsDone(se).find(s=>s.kg!=null);return(k?fmt(k.kg)+" kg":"–")+" (dal tuo WhatsApp, reps non segnate)"};
+const seTxt=(se,sep)=>isWA(se)?waTxt(se):setsDone(se).map(setTxt).join(sep||" · ");
+function markSeedDel(key){const a=store.get("av_seeddel",[]);if(!a.includes(key)){a.push(key);store.set("av_seeddel",a)}}
+applySeed26();
+
 const todayEntry=id=>sessions(id).find(se=>se&&se.iso===isoToday())||null;
 const prevEntry=id=>{const a=sessions(id),t=isoToday();for(let i=a.length-1;i>=0;i--){if(a[i]&&a[i].iso!==t)return a[i]}return null};
-const setsDone=se=>(se&&se.sets?se.sets.filter(Boolean):[]);
 const prOf=id=>{let m=null;sessions(id).forEach(se=>setsDone(se).forEach(s=>{if(s.kg!=null&&(m==null||s.kg>m))m=s.kg}));return m};
 const topRep=r=>{const m=String(r||"").match(/(\d+)\s*-\s*(\d+)/);if(m)return +m[2];const m2=String(r||"").match(/×\s*(\d+)/);return m2?+m2[1]:null};
 const setTxt=s=>(s.kg!=null?fmt(s.kg):"–")+"×"+(s.reps==null?"–":s.reps);
 function suggestion(e){const p=prevEntry(e.id),ss=setsDone(p);if(!ss.length)return"";
   const top=topRep(e.r),rs=ss.filter(s=>s.reps!=null);
+  if(!rs.length)return'Segna anche le <b>ripetizioni</b>: così ti dico quando aumentare il peso';
   if(top&&rs.length&&rs.every(s=>s.reps>=top))return'Oggi: <b>+ peso</b> (il salto più piccolo), hai chiuso tutto a '+top+' reps';
   return'Oggi: <b>+1 rep</b> con lo stesso peso';}
 function chartSVG(id){
@@ -512,7 +545,7 @@ function exHTML(e,i){
   let h='<div class="ex" data-id="'+esc(e.id)+'"><div class="exrow"><div class="exfig">'+fig(e.n)+'</div><div class="exmain">'+
     '<div class="exh"><span class="exn">'+(i+1)+'. '+esc(e.n)+'</span><span class="exr">'+esc(e.r)+'</span></div>'+
     '<a class="howto" href="'+yt(e.n)+'" target="_blank" rel="noopener">▶ Come si fa</a>'+etype(e.n);
-  if(pvs.length)h+='<div class="prev">Ultima volta ('+esc(pv.date)+'): '+pvs.map(setTxt).join(' · ')+
+  if(pvs.length)h+='<div class="prev">Ultima volta ('+esc(pv.date)+'): '+esc(seTxt(pv))+
     (pr!=null?'  ·  <span class="pr">Record '+fmt(pr)+' kg</span>':'')+'</div><div class="sugg">'+suggestion(e)+'</div>';
   h+='</div></div><div class="sets">';
   for(let s=0;s<rows;s++){
@@ -529,7 +562,7 @@ function exHTML(e,i){
     (extra>0&&!ts[rows-1]?'<button class="addset" data-act="rmset">− serie</button>':'')+'</div>';
   const all=sessions(e.id);
   if(all.length)h+='<details class="hist" data-h="'+esc(e.id)+'"'+(openHist.has(e.id)?' open':'')+'><summary>Storico e progressione ('+all.length+')</summary>'+chartSVG(e.id)+'<ul>'+
-    all.map((se,j)=>({se,j})).reverse().map(o=>'<li><b>'+esc(o.se.date||"")+'</b> — '+setsDone(o.se).map(setTxt).join(' · ')+
+    all.map((se,j)=>({se,j})).reverse().map(o=>'<li><b>'+esc(o.se.date||"")+'</b> — '+esc(seTxt(o.se))+
       ' <button class="hdel" data-act="hdel" data-j="'+o.j+'" aria-label="Elimina questa sessione">×</button></li>').join('')+'</ul></details>';
   return h+'</div>';
 }
@@ -590,7 +623,7 @@ dayCard.addEventListener("click",ev=>{const b=ev.target.closest("[data-act]");if
   if(act==="ok"){logSet(e,+b.closest(".setrow").dataset.s,b.closest(".setrow"));return}
   if(act==="addset"){const x=store.get("av_extra",{}),k=t+"|"+e.id;Object.keys(x).forEach(q=>{if(q.slice(0,10)!==t)delete x[q]});x[k]=(x[k]||0)+1;store.set("av_extra",x);renderDay();return}
   if(act==="rmset"){const x=store.get("av_extra",{}),k=t+"|"+e.id;if(x[k]>0){x[k]--;store.set("av_extra",x)}renderDay();return}
-  if(act==="hdel"){if(!armed(b,"elimina?"))return;const j=+b.dataset.j,a=sessions(e.id);if(a[j]){a.splice(j,1);if(!a.length)delete hist[e.id];saveHist();renderDay();renderDays();showToast("Sessione eliminata")}return}
+  if(act==="hdel"){if(!armed(b,"elimina?"))return;const j=+b.dataset.j,a=sessions(e.id);if(a[j]){if(isWA(a[j]))markSeedDel(e.id+"|"+a[j].iso);a.splice(j,1);if(!a.length)delete hist[e.id];saveHist();renderDay();renderDays();showToast("Sessione eliminata")}return}
   if(act==="up"&&idx>0){[list[idx-1],list[idx]]=[list[idx],list[idx-1]];saveProg();renderDay();return}
   if(act==="down"&&idx<list.length-1){[list[idx+1],list[idx]]=[list[idx],list[idx+1]];saveProg();renderDay();return}
   if(act==="del"){if(!armed(b,"Tocca di nuovo per eliminare"))return;list.splice(idx,1);saveProg();renderDay();showToast("Esercizio tolto (lo storico resta)");return}
@@ -624,7 +657,7 @@ function sessionText(){const t=isoToday(),P=getProg(),lines=[],dd=t.split("-");l
     done.forEach(o=>{const ss=setsDone(o.te),pv=prevEntry(o.e.id),pr=prOf(o.e.id);
       lines.push((o.i+1)+". "+o.e.n+" — schema "+o.e.r);
       lines.push("   Oggi: "+ss.map((s,k)=>"S"+(k+1)+" "+(s.kg!=null?fmt(s.kg)+" kg":"– kg")+" × "+(s.reps==null?"–":s.reps)).join(" | "));
-      if(setsDone(pv).length)lines.push("   Ultima volta ("+(pv.date||"")+"): "+setsDone(pv).map(setTxt).join(" | "));
+      if(setsDone(pv).length)lines.push("   Ultima volta ("+(pv.date||"")+"): "+seTxt(pv," | "));
       if(pr!=null)lines.push("   Record: "+fmt(pr)+" kg");
       ss.forEach(s=>{tot++;if(s.kg!=null&&s.reps!=null)vol+=s.kg*s.reps});lines.push("")});
     const skipped=P[d.id].filter(e=>!setsDone(todayEntry(e.id)).length).map(e=>e.n);
@@ -836,7 +869,7 @@ function renderW(){const a=store.get("av_weights",[]);const wc=document.getEleme
     (prev?' · settimana prima '+fmt(r1(prev.m))+' kg → <b>'+(cur.m-prev.m>=0?'+':'')+fmt(r1(cur.m-prev.m))+' kg</b>':'')+'</div>':'';
   wlog.innerHTML=a.map((w,i)=>({w,i})).reverse().map(o=>'<li><span>'+fmt(o.w.kg)+' kg</span><span class="d">'+esc(o.w.d)+
     ' <button class="hdel" data-wi="'+o.i+'" aria-label="Elimina questa pesata">×</button></span></li>').join("");
-  wlog.querySelectorAll("[data-wi]").forEach(b=>b.onclick=()=>{if(!armed(b,"elimina?"))return;const x=store.get("av_weights",[]);x.splice(+b.dataset.wi,1);store.set("av_weights",x);renderW()})}
+  wlog.querySelectorAll("[data-wi]").forEach(b=>b.onclick=()=>{if(!armed(b,"elimina?"))return;const x=store.get("av_weights",[]),it=x[+b.dataset.wi];if(it&&it.src==="wa"&&it.iso)markSeedDel("w|"+it.iso);x.splice(+b.dataset.wi,1);store.set("av_weights",x);renderW()})}
 document.getElementById("wAdd").onclick=()=>{const inp=document.getElementById("wInput"),v=num(inp.value);
   if(v==null||v<30||v>250){showToast("Scrivi il peso in kg (es. 80,4)");return}
   const t=isoToday(),a=store.get("av_weights",[]).filter(w=>w.iso!==t);a.push({kg:v,d:todayLabel(),iso:t});store.set("av_weights",a);inp.value="";renderW();showToast("Peso salvato ✓")};
@@ -871,7 +904,7 @@ renderDays();renderDay();
 /* ===== salvataggio: account Claude se c'è, altrimenti solo telefono (+ backup manuale) ===== */
 function collectState(){const s={};try{for(let i=0;i<LS.length;i++){const k=LS.key(i);if(k&&k.indexOf("av_")===0)s[k]=LS.getItem(k)}}catch(e){}return s}
 function applyState(s){try{for(const k in s){if(k.indexOf("av_")===0&&typeof s[k]==="string")LS.setItem(k,s[k])}}catch(e){}}
-function rerenderAll(){hist=store.get("av_hist",{});prog=store.get("av_prog",null);draft=store.get("av_draft2",{});curDay=store.get("av_curday","pushA");
+function rerenderAll(){hist=store.get("av_hist",{});prog=store.get("av_prog",null);draft=store.get("av_draft2",{});curDay=store.get("av_curday","pushA");applySeed26();
   const sv=store.get("av_theme",null);if(sv)document.documentElement.setAttribute("data-theme",sv);
   if(LS.getItem("av_unlocked")==="1")document.getElementById("lock").hidden=true;
   renderDays();renderDay();renderDiet();renderW();}
