@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0A7663">
+<title>Questionario Massa Pulita</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+/* Layout: una colonna stretta come un modulo cartaceo; sezioni numerate perché si compilano in ordine; i cibi sono gettoni a tre stati */
+:root{
+  --bg:#F2F5F4; --surface:#FFFFFF; --ink:#15211F; --muted:#56655F; --line:#D7E0DC;
+  --accent:#0A7663; --accent-ink:#FFFFFF; --accent-soft:#DDF0EA;
+  --like:#1C7F45; --like-bg:#DFF3E7; --no:#AD2A22; --no-bg:#FBE6E3; --chip:#E9EFEC;
+  --f-display:"Space Grotesk",ui-sans-serif,system-ui,sans-serif;
+  --f-body:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0E1513; --surface:#151F1D; --ink:#E6EEEB; --muted:#9BAAA5; --line:#2A3633;
+  --accent:#3DC0A5; --accent-ink:#04201A; --accent-soft:#163631;
+  --like:#62D191; --like-bg:#163626; --no:#FF8F86; --no-bg:#3B1A17; --chip:#1D2927; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E1513; --surface:#151F1D; --ink:#E6EEEB; --muted:#9BAAA5; --line:#2A3633;
+  --accent:#3DC0A5; --accent-ink:#04201A; --accent-soft:#163631;
+  --like:#62D191; --like-bg:#163626; --no:#FF8F86; --no-bg:#3B1A17; --chip:#1D2927; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 64px}
+.wrap{max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+header{display:flex;flex-direction:column;gap:8px;padding-bottom:4px}
+.eyebrow{font-family:var(--f-display);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:700}
+h1{font-family:var(--f-display);font-size:clamp(28px,7vw,40px);line-height:1.05;margin:0;text-wrap:balance;letter-spacing:-.01em}
+.lead{margin:0;color:var(--muted);max-width:60ch}
+.facts{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.facts span{font-size:12.5px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 10px;color:var(--muted)}
+section.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 18px 20px;display:flex;flex-direction:column;gap:18px}
+.sh{display:flex;align-items:baseline;gap:10px}
+.sh .n{font-family:var(--f-display);font-weight:700;color:var(--accent);font-size:14px;font-variant-numeric:tabular-nums}
+.sh h2{font-family:var(--f-display);font-size:20px;margin:0;text-wrap:balance}
+.intro{margin:-8px 0 0;color:var(--muted);font-size:13.5px}
+.field{display:flex;flex-direction:column;gap:7px;min-width:0}
+.field>label,.field>.lab{font-weight:600;font-size:14px}
+.hint{font-weight:400;color:var(--muted);font-size:12.5px}
+.row2{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
+input[type=text],input[type=number],textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+textarea{min-height:76px;resize:vertical}
+input::placeholder,textarea::placeholder{color:var(--muted);opacity:.8}
+.unitwrap{position:relative}
+.unitwrap input{padding-right:46px}
+.unitwrap .u{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;pointer-events:none}
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.pills input{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.pills label{cursor:pointer;border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:8px 13px;font-size:13.5px;line-height:1.25;user-select:none}
+.pills input:checked+label{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.pills input:focus-visible+label,.chip:focus-visible,button:focus-visible,a.btn:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.range{display:flex;flex-direction:column;gap:6px}
+.range input{width:100%;accent-color:var(--accent)}
+.range .rv{font-size:13.5px;color:var(--accent);font-weight:600}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12.5px;color:var(--muted)}
+.legend b{font-weight:600}
+.lg-like{color:var(--like)} .lg-no{color:var(--no)}
+.group{display:flex;flex-direction:column;gap:8px}
+.group h3{margin:0;font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{font:inherit;font-size:13.5px;cursor:pointer;border:1px solid transparent;background:var(--chip);color:var(--ink);border-radius:8px;padding:7px 11px;display:inline-flex;gap:6px;align-items:center}
+.chip .m{width:12px;display:inline-block;text-align:center;font-weight:700}
+.chip[data-s="0"] .m{display:none}
+.chip[data-s="1"]{background:var(--like-bg);color:var(--like);border-color:var(--like)}
+.chip[data-s="2"]{background:var(--no-bg);color:var(--no);border-color:var(--no);text-decoration:line-through}
+.send{border-color:var(--accent)}
+.status{font-size:13.5px;color:var(--muted)}
+.status b{color:var(--ink)}
+.preview{width:100%;min-height:220px;font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px;white-space:pre-wrap}
+.actions{display:flex;flex-wrap:wrap;gap:10px}
+.btn{font:inherit;font-weight:600;font-size:14.5px;border-radius:10px;padding:11px 16px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--muted);font-weight:500}
+.toast{font-size:13px;color:var(--like);min-height:1.2em}
+.foot{font-size:12.5px;color:var(--muted);text-align:center}
+@media (prefers-reduced-motion:no-preference){.chip,.pills label{transition:background-color .12s,color .12s,border-color .12s}}
+</style>
+<style>[hidden]{display:none!important}body{margin:0}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Per la tua dieta</div>
+    <h1>Questionario Massa Pulita</h1>
+    <p class="lead">Rispondi con calma: con queste risposte si prepara una dieta sui tuoi gusti per mettere muscolo senza ingrassare, senza regole troppo rigide. Ci vogliono circa 5 minuti e puoi saltare quello che non sai.</p>
+    <div class="facts"><span>circa 5 minuti</span><span>si salva mentre scrivi</span><span>alla fine lo mandi a Vittorio</span></div>
+  </header>
+  <div id="form"></div>
+  <section class="card send" aria-labelledby="sendTitle">
+    <div class="sh"><span class="n">7</span><h2 id="sendTitle">Manda le risposte</h2></div>
+    <p class="status" id="status">Le risposte compaiono qui sotto mentre compili.</p>
+    <textarea class="preview" id="preview" readonly aria-label="Riepilogo delle risposte"></textarea>
+    <div class="actions">
+      <button class="btn primary" id="pdfBtn" type="button">Scarica il PDF</button>
+      <a class="btn" id="waBtn" href="https://wa.me/" target="_blank" rel="noopener">Manda il testo su WhatsApp</a>
+      <button class="btn" id="copyBtn" type="button">Copia le risposte</button>
+      <button class="btn ghost" id="resetBtn" type="button">Ricomincia da capo</button>
+    </div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <p class="hint" style="margin:0">Sul telefono «Scarica il PDF» apre Condividi: scegli WhatsApp e poi Vittorio. Sul computer il PDF finisce nella cartella Download.</p>
+  </section>
+  <p class="foot">Le risposte restano solo su questo telefono finché non le mandi tu.</p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+(function(){
+const SECTIONS=[
+ {id:"chi",title:"Chi sei",fields:[
+  {row:[{k:"nome",t:"text",l:"Nome",ph:"Come ti chiami"},{k:"eta",t:"num",l:"Età",u:"anni"}]},
+  {k:"sesso",t:"radio",l:"Sesso",o:["Uomo","Donna","Preferisco non dirlo"]},
+  {row:[{k:"altezza",t:"num",l:"Altezza",u:"cm"},{k:"peso",t:"num",l:"Peso",u:"kg",step:"0.1",h:"la mattina, a digiuno"},{k:"vita",t:"num",l:"Giro vita",u:"cm",h:"facoltativo, all'ombelico"}]},
+  {k:"fisico",t:"radio",l:"Come ti vedi adesso",o:["Magro, fatico a prendere peso","Normale","Normale ma con un po' di pancia","In sovrappeso"]},
+  {k:"lavoro",t:"radio",l:"Durante il giorno sei",o:["Quasi sempre seduto","Metà in piedi, metà seduto","Sempre in movimento o lavoro fisico"]},
+  {k:"passi",t:"radio",l:"Passi al giorno, più o meno",o:["Meno di 5.000","5.000–10.000","Più di 10.000","Non lo so"]}]},
+ {id:"allenamento",title:"Allenamento",fields:[
+  {k:"esperienza",t:"radio",l:"Da quanto ti alleni con i pesi",o:["Non ancora","Meno di 6 mesi","Da 6 mesi a 2 anni","Più di 2 anni"]},
+  {k:"giorni",t:"radio",l:"Giorni di allenamento a settimana",o:["0","1–2","3","4","5","6 o più"]},
+  {k:"tipo",t:"multi",l:"Cosa fai",o:["Pesi in palestra","Corpo libero","Corsa o bici","Calcio, padel o altro sport"]},
+  {k:"ora_all",t:"radio",l:"Di solito ti alleni",o:["Mattina","All'ora di pranzo","Pomeriggio","Sera","Cambia ogni giorno"]}]},
+ {id:"stile",title:"Obiettivo e stile",fields:[
+  {k:"obiettivo",t:"radio",l:"Obiettivo",o:["Più muscolo senza ingrassare","Più muscolo, accetto un filo di grasso","Perdere grasso tenendo il muscolo"]},
+  {k:"rigidita",t:"range",l:"Quanto deve essere precisa la dieta",labels:["Solo regole generali","Porzioni a occhio","Porzioni indicative con qualche peso","Grammi indicativi","Grammi precisi tutti i giorni"],def:2},
+  {k:"pesare",t:"radio",l:"Pesare il cibo con la bilancia",o:["Sì, sempre","Solo le prime settimane","No, preferisco a occhio"]},
+  {k:"stessi",t:"radio",l:"Mangiare spesso le stesse cose",o:["Mi va benissimo","Ogni tanto","No, voglio variare"]},
+  {k:"liberi",t:"radio",l:"Pasti liberi a settimana (pizza, sushi, burger…)",o:["0","1","2","3 o più"]}]},
+ {id:"giornata",title:"La tua giornata",fields:[
+  {k:"pasti",t:"radio",l:"Pasti al giorno",o:["2","3","4","5 o più"]},
+  {k:"colazione",t:"radio",l:"Colazione",o:["Dolce","Salata","Solo caffè","La salto"]},
+  {k:"pranzo_dove",t:"radio",l:"Il pranzo lo mangi",o:["A casa","Portato da casa","In mensa","Fuori, al bar o al ristorante"]},
+  {k:"cucina",t:"radio",l:"Sai cucinare",o:["Sì","Le cose base","No"]},
+  {k:"chi_cucina",t:"radio",l:"Chi cucina a casa",o:["Io","Qualcuno della famiglia","Un po' e un po'"]},
+  {k:"tempo",t:"radio",l:"Tempo per cucinare al giorno",o:["15 minuti","30 minuti","Un'ora o più"]},
+  {k:"prep",t:"radio",l:"Cucinare in anticipo per più giorni",o:["Sì","Solo qualcosa","No"]},
+  {k:"orari",t:"text",l:"Orari tipici",ph:"es. sveglia 7:30, pranzo 14, palestra 18, cena 21"},
+  {k:"budget",t:"radio",l:"Budget per la spesa",o:["Stretto","Normale","Non è un problema"]}]},
+ {id:"gusti",title:"Cosa ti piace",intro:"Tocca un cibo una volta se ti piace, due volte se non lo mangi, tre volte per tornare neutro. Lascia neutro quello che mangi senza problemi.",groups:[
+  ["Carne e pesce",["Pollo","Tacchino","Manzo","Maiale","Prosciutto crudo o bresaola","Salmone","Tonno","Merluzzo o pesce bianco","Gamberi"]],
+  ["Uova e latticini",["Uova","Albumi","Yogurt greco","Skyr","Fiocchi di latte o ricotta","Mozzarella","Parmigiano","Latte","Kefir"]],
+  ["Legumi e integratori",["Ceci","Lenticchie","Fagioli","Tofu","Proteine in polvere"]],
+  ["Carboidrati",["Riso","Pasta","Pane","Patate","Patate dolci","Avena","Cereali da colazione","Gallette o Wasa","Cous cous","Piadina o tortillas"]],
+  ["Frutta",["Banana","Mela","Arancia","Kiwi","Frutti di bosco","Ananas","Uva","Frutta secca"]],
+  ["Verdura",["Insalata","Pomodori","Zucchine","Broccoli","Spinaci","Peperoni","Carote","Melanzane","Funghi","Fagiolini"]],
+  ["Condimenti e snack",["Olio d'oliva","Avocado","Burro d'arachidi","Cioccolato fondente","Miele o marmellata"]]],
+  fields:[
+  {k:"amati",t:"area",l:"Piatti che ami e vuoi tenere",ph:"es. carbonara, pizza il sabato, cornetto la domenica"},
+  {k:"odiati",t:"area",l:"Cose che non mangeresti mai, anche se non sono in lista",ph:""}]},
+ {id:"salute",title:"Salute e abitudini",fields:[
+  {k:"regime",t:"radio",l:"Mangi",o:["Di tutto","Vegetariano","Vegano","Altro"]},
+  {k:"intolleranze",t:"multi",l:"Allergie o intolleranze",o:["Nessuna","Lattosio","Glutine","Frutta secca","Crostacei","Uova"],none:"Nessuna"},
+  {k:"intoll_altro",t:"text",l:"Altre allergie o intolleranze",ph:"facoltativo"},
+  {k:"salute",t:"area",l:"Problemi di salute o farmaci che contano per la dieta",h:"facoltativo",ph:"es. colesterolo alto, reflusso. Serve solo a non consigliarti cose sbagliate."},
+  {k:"alcol",t:"radio",l:"Alcol",o:["Mai","Solo nel weekend","Qualche volta in settimana","Quasi tutti i giorni"]},
+  {k:"bibite",t:"radio",l:"Bibite zuccherate",o:["Mai","Ogni tanto","Tutti i giorni"]},
+  {k:"integratori",t:"multi",l:"Integratori che usi o useresti",o:["Proteine in polvere","Creatina","Multivitaminico","Nessuno"],none:"Nessuno"},
+  {k:"note",t:"area",l:"Altro che vuoi dire",ph:""}]}
+];
+const KEY="qmp_v1";
+let S={f:{},chips:{}};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const slug=s=>s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+
+function fieldHTML(f){
+  const id="f-"+f.k,h=f.h?' <span class="hint">· '+esc(f.h)+'</span>':"";
+  if(f.t==="text")return'<div class="field"><label for="'+id+'">'+esc(f.l)+h+'</label><input type="text" id="'+id+'" data-k="'+f.k+'" placeholder="'+esc(f.ph||"")+'" autocomplete="off"></div>';
+  if(f.t==="num")return'<div class="field"><label for="'+id+'">'+esc(f.l)+h+'</label><div class="unitwrap"><input type="number" inputmode="decimal" id="'+id+'" data-k="'+f.k+'" step="'+(f.step||"1")+'" min="0"><span class="u">'+esc(f.u)+'</span></div></div>';
+  if(f.t==="area")return'<div class="field"><label for="'+id+'">'+esc(f.l)+h+'</label><textarea id="'+id+'" data-k="'+f.k+'" placeholder="'+esc(f.ph||"")+'"></textarea></div>';
+  if(f.t==="radio"||f.t==="multi"){
+    const type=f.t==="radio"?"radio":"checkbox";
+    return'<div class="field" role="group" aria-labelledby="'+id+'-l"><span class="lab" id="'+id+'-l">'+esc(f.l)+(f.t==="multi"?' <span class="hint">· anche più di una</span>':"")+h+'</span><div class="pills">'+
+      f.o.map((o,i)=>'<input type="'+type+'" name="'+f.k+'" id="'+id+'-'+i+'" value="'+esc(o)+'" data-k="'+f.k+'" data-t="'+f.t+'"><label for="'+id+'-'+i+'">'+esc(o)+'</label>').join("")+'</div></div>';}
+  if(f.t==="range")return'<div class="field range"><label for="'+id+'">'+esc(f.l)+'</label><input type="range" id="'+id+'" data-k="'+f.k+'" min="1" max="'+f.labels.length+'" step="1" value="'+f.def+'"><span class="rv" id="'+id+'-v"></span></div>';
+  return"";
+}
+function build(){
+  $("#form").innerHTML=SECTIONS.map((s,i)=>{
+    let h='<section class="card" aria-labelledby="h-'+s.id+'"><div class="sh"><span class="n">'+(i+1)+'</span><h2 id="h-'+s.id+'">'+esc(s.title)+'</h2></div>';
+    if(s.intro)h+='<p class="intro">'+esc(s.intro)+'</p><div class="legend"><span><b class="lg-like">✓ verde</b> mi piace</span><span><b class="lg-no">✕ rosso</b> non lo mangio</span></div>';
+    if(s.groups)h+=s.groups.map(([g,items])=>'<div class="group"><h3>'+esc(g)+'</h3><div class="chips">'+items.map(it=>'<button type="button" class="chip" id="c-'+slug(it)+'" data-food="'+esc(it)+'" data-s="0" aria-label="'+esc(it)+': neutro"><span class="m" aria-hidden="true"></span>'+esc(it)+'</button>').join("")+'</div></div>').join("");
+    h+=s.fields.map(f=>f.row?'<div class="row2">'+f.row.map(fieldHTML).join("")+'</div>':fieldHTML(f)).join("");
+    return h+'</section>';}).join("");
+}
+const allFields=()=>SECTIONS.flatMap(s=>s.fields.flatMap(f=>f.row?f.row:[f]));
+function applyState(){
+  allFields().forEach(f=>{const v=S.f[f.k];
+    if(f.t==="radio"||f.t==="multi"){document.querySelectorAll('input[name="'+f.k+'"]').forEach(el=>{el.checked=Array.isArray(v)?v.includes(el.value):v===el.value})}
+    else if(f.t==="range"){const el=$("#f-"+f.k);el.value=v||f.def;rangeLabel(f)}
+    else{const el=$("#f-"+f.k);if(el)el.value=v==null?"":v}});
+  document.querySelectorAll(".chip").forEach(c=>setChip(c,S.chips[c.dataset.food]||0));
+}
+function rangeLabel(f){const el=$("#f-"+f.k);$("#f-"+f.k+"-v").textContent=f.labels[(+el.value||f.def)-1]}
+const LBL=["neutro","mi piace","non lo mangio"],MK=["","✓","✕"];
+function setChip(c,s){c.dataset.s=s;c.querySelector(".m").textContent=MK[s];c.setAttribute("aria-label",c.dataset.food+": "+LBL[s])}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function load(){try{const v=JSON.parse(localStorage.getItem(KEY)||"null");if(v&&v.f&&v.chips)return v}catch(e){}return null}
+
+function summary(){
+  const L=[],nome=(S.f.nome||"").trim(),d=new Date().toLocaleDateString("it-IT");
+  L.push("QUESTIONARIO MASSA PULITA"+(nome?" — "+nome:"")+" ("+d+")");
+  let n=0;
+  SECTIONS.forEach(s=>{const lines=[];
+    s.fields.flatMap(f=>f.row?f.row:[f]).forEach(f=>{let v=S.f[f.k];
+      if(f.t==="range")v=v?f.labels[v-1]:null;
+      if(Array.isArray(v))v=v.length?v.join(", "):null;
+      if(v==null||String(v).trim()==="")return;n++;
+      lines.push("- "+f.l+": "+String(v).trim()+(f.u?" "+f.u:""))});
+    if(s.groups){const like=[],no=[];
+      s.groups.forEach(([,items])=>items.forEach(it=>{const st=S.chips[it];if(st===1)like.push(it);if(st===2)no.push(it)}));
+      if(like.length){lines.unshift("- Gli piace: "+like.join(", "));n++}
+      if(no.length){lines.splice(like.length?1:0,0,"- Non mangia: "+no.join(", "));n++}}
+    if(lines.length){L.push("",s.title.toUpperCase(),...lines)}});
+  return{text:L.join("\n"),n};
+}
+function refresh(){
+  const {text,n}=summary(),miss=["eta","altezza","peso"].filter(k=>!S.f[k]).map(k=>({eta:"età",altezza:"altezza",peso:"peso"})[k]);
+  $("#preview").value=n?text:"";
+  $("#preview").placeholder="Qui comparirà il riepilogo, pronto da mandare.";
+  $("#status").innerHTML=n?("<b>"+n+" risposte</b> pronte."+(miss.length?" Mancano ancora: "+miss.join(", ")+".":" Puoi mandarle.")):"Le risposte compaiono qui sotto mentre compili.";
+  $("#waBtn").href="https://wa.me/?text="+encodeURIComponent(text);
+}
+function onChange(ev){const el=ev.target,k=el.dataset&&el.dataset.k;if(!k)return;
+  const f=allFields().find(x=>x.k===k);if(!f)return;
+  if(f.t==="multi"){let v=[...document.querySelectorAll('input[name="'+k+'"]:checked')].map(x=>x.value);
+    if(f.none&&el.checked){if(el.value===f.none)v=[f.none];else v=v.filter(x=>x!==f.none)}
+    S.f[k]=v;document.querySelectorAll('input[name="'+k+'"]').forEach(x=>{x.checked=v.includes(x.value)})}
+  else if(f.t==="radio"){S.f[k]=el.value}
+  else if(f.t==="range"){S.f[k]=+el.value;rangeLabel(f)}
+  else S.f[k]=el.value;
+  save();refresh();}
+function toast(m){const t=$("#toast");t.textContent=m;clearTimeout(toast.t);toast.t=setTimeout(()=>t.textContent="",3000)}
+
+function start(data){
+  build();
+  S=(data&&data.state)||load()||{f:{},chips:{}};
+  applyState();refresh();
+  $("#form").addEventListener("input",onChange);
+  $("#form").addEventListener("change",onChange);
+  $("#form").addEventListener("click",ev=>{const c=ev.target.closest(".chip");if(!c)return;
+    const s=((+c.dataset.s||0)+1)%3;setChip(c,s);if(s)S.chips[c.dataset.food]=s;else delete S.chips[c.dataset.food];save();refresh()});
+  $("#copyBtn").addEventListener("click",()=>{const txt=summary().text;
+    const fallback=()=>{const p=$("#preview");p.focus();p.select();toast("Testo selezionato: copialo e incollalo su WhatsApp.")};
+    try{navigator.clipboard.writeText(txt).then(()=>toast("Copiato. Ora incollalo nella chat con Vittorio."),fallback)}catch(e){fallback()}});
+
+  function pdfBlob(){
+    const J=window.jspdf&&window.jspdf.jsPDF;if(!J)return null;
+    const clean=s=>String(s).replace(/[—–]/g,"-").replace(/…/g,"...").replace(/[’‘]/g,"'").replace(/[“”«»]/g,'"').replace(/[^\x00-\xFF]/g,"");
+    const doc=new J({unit:"mm",format:"a4"}),L=18,W=174,B=282;let y=20;
+    const lines=summary().text.split("\n");
+    const put=(txt,size,bold,gap)=>{doc.setFont("helvetica",bold?"bold":"normal");doc.setFontSize(size);
+      doc.splitTextToSize(clean(txt),W).forEach(t=>{if(y>B){doc.addPage();y=20}doc.text(t,L,y);y+=size*0.45})
+      y+=gap||0};
+    doc.setTextColor(10,118,99);put(lines[0],15,true,3);doc.setTextColor(21,33,31);
+    lines.slice(1).forEach(t=>{if(!t.trim()){y+=2;return}
+      if(!t.startsWith("- ")){y+=1;doc.setTextColor(10,118,99);put(t,11.5,true,1);doc.setTextColor(21,33,31)}
+      else put(t.slice(2),10.5,false,1.2)});
+    return doc.output("blob");
+  }
+  const pdfBtn=$("#pdfBtn");
+  if(!(window.jspdf&&window.jspdf.jsPDF))pdfBtn.hidden=true;
+  pdfBtn.addEventListener("click",async()=>{
+    if(!summary().n){toast("Compila almeno qualche risposta prima.");return}
+    const blob=pdfBlob();if(!blob){toast("Il PDF non si riesce a creare: usa «Copia le risposte».");return}
+    const nome=(S.f.nome||"").trim().replace(/[^A-Za-zÀ-ÿ0-9]+/g,"_")||"dieta",name="questionario_"+nome+".pdf";
+    let file=null;try{file=new File([blob],name,{type:"application/pdf"})}catch(e){}
+    if(file&&navigator.canShare&&navigator.canShare({files:[file]})){
+      try{await navigator.share({files:[file],title:"Questionario dieta"});toast("Fatto.");return}
+      catch(e){if(e&&e.name==="AbortError")return}}
+    try{const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),4000);toast("PDF scaricato: mandalo a Vittorio su WhatsApp.")}
+    catch(e){toast("Il PDF non si riesce a scaricare: usa «Copia le risposte».")}
+  });
+  let armed=0;
+  $("#resetBtn").addEventListener("click",ev=>{const b=ev.currentTarget;
+    if(!armed){armed=1;b.textContent="Tocca di nuovo per cancellare tutto";setTimeout(()=>{armed=0;b.textContent="Ricomincia da capo"},4000);return}
+    armed=0;b.textContent="Ricomincia da capo";S={f:{},chips:{}};save();applyState();refresh();toast("Risposte cancellate.")});
+}
+if(window.claude&&window.claude.hot&&window.claude.hot.snapshot)window.claude.hot.snapshot(()=>({state:S}));
+if(window.claude&&window.claude.hot&&window.claude.hot.ready)window.claude.hot.ready(start);
+else start(window.claude&&window.claude.hot&&window.claude.hot.data||{});
+})();
+</script>
+</body>
+</html>
